@@ -11,32 +11,22 @@ Vagrant.configure("2") do |config|
     # Optional NFS. Make sure to remove other synced_folder line too
     #config.vm.synced_folder ".", "/var/www", :nfs => { :mount_options => ["dmode=777","fmode=666"] }
 
-    # config.vm.provision "file", source: ".provision/scotch.conf", destination: "/home/vagrant/scotch.conf"
-    # config.vm.provision :shell, path: ".provision/provision.sh"
-
     config.vm.provision "shell", inline: <<-SHELL
 
-        # Rename scotchbox.local to scotch.box
-        echo "Disabling scotchbox.local.."
-        a2dissite scotchbox.local
-
-        echo "Renaming scotchbox.local to scotch.box..."
-        sudo cp /etc/apache2/sites-available/scotchbox.local.conf /etc/apache2/sites-available/scotch.box.conf
-        sudo sed -i 's,scotchbox.local,scotch.box,g' /etc/apache2/sites-available/scotch.box.conf
-
-        echo "Enabling scotch.box..."
-        a2ensite scotch.box.conf
+        # Disable scotchbox.local
+        echo "Disabling scotchbox.local..."
+        a2dissite scotchbox.local.conf
 
         # Enable dynamic *.box virtual hosts
-        echo "Enabling Dynamic VirtualHost Support..."
+        echo "Enabling Dynamic VirtualHost support..."
         a2enmod vhost_alias
 
         echo "Creating VirtualHost config for *.box..."
-        sudo cp /etc/apache2/sites-available/scotch.box.conf /etc/apache2/sites-available/box.conf
+        sudo cp /etc/apache2/sites-available/scotchbox.local.conf /etc/apache2/sites-available/box.conf
 
         echo "Updating config for *.box..."
         # ServerName: scotchbox.local --> box
-        sudo sed -i 's,scotch.box,box,g' /etc/apache2/sites-available/box.conf
+        sudo sed -i 's,scotchbox.local,box,g' /etc/apache2/sites-available/box.conf
         # ServerAlias: www.box --> *.box
         sudo sed -i 's,www.box,*.box,g' /etc/apache2/sites-available/box.conf
         ## DocumentRoot --> VirtualDocumentRoot
