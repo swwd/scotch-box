@@ -4,8 +4,9 @@ Scotch Box
 ## Check out the official docs at: [box.scotch.io][16]
 ## [Read the getting started article](https://scotch.io/bar-talk/introducing-scotch-box-a-vagrant-lamp-stack-that-just-works)
 ## [Read the 2.0 release article](https://scotch.io/bar-talk/announcing-scotch-box-2-0-our-dead-simple-vagrant-lamp-stack-improved)
+## [Read the 2.5 release article](https://scotch.io/bar-talk/announcing-scotch-box-2-5)
 
-![Scotch Box](https://cask.scotch.io/2015/07/scotch-box-2.png)
+![Scotch Box](https://scotch.io/wp-content/uploads/2015/11/scotch-box-2.5-share.png)
 
 Scotch Box is a preconfigured Vagrant Box with a full array of LAMP Stack features to get you up and running with Vagrant in no time.
 
@@ -14,7 +15,7 @@ A lot of PHP websites and applications don’t require much server configuration
 No provisioning tools or setup is really even required with Scotch Box. Since everything is packaged into the box, running “vagrant” is super fast, you’ll never have to worry about your environment breaking with updates, and you won’t need Internet to code.
 
 
-![Scotch Box](https://cask.scotch.io/2015/07/Screen-Shot-2015-07-15-at-10.49.17-AM.png)
+![Scotch Box](https://scotch.io/wp-content/uploads/2015/11/Screen-Shot-2015-11-03-at-1.31.52-PM.png)
 
 
 ## What and Why
@@ -26,7 +27,7 @@ I used to use this seriously awesome [Vagrant LAMP Stack][1] that I even wrote a
 So that's why I decided to build a Vagrant LAMP Box. The box is prepackaged and requires provisioning and no configuration. You simply boot it up and it just works. **It's not for every project, but it sure will help you get straight to it with a lot of them**.
 
 
-> Are you new to Vagrant? If your new to Vagrant, check out our [getting started guide with Vagrant][2] article, our [Vagrant Share article][10], and our article on [Larvel’s Vagrant stack Homestead][11]. If you follow the first tutorial, you can just learn the Vagrant commands but use the Scotch Box instead.
+> Are you new to Vagrant? If you're new to Vagrant, check out our [getting started guide with Vagrant][2] article, our [Vagrant Share article][10], and our article on [Laravel’s Vagrant stack Homestead][11]. If you follow the first tutorial, you can just learn the Vagrant commands but use the Scotch Box instead.
 
 
 ![Scotch Box SSH](https://cask.scotch.io/2014/10/scotch-box-ssh.jpg)
@@ -141,6 +142,12 @@ vagrant ssh
 - Port: 5432
 
 
+### MongoDB
+
+- Hostname: localhost
+- Database: scotchbox
+- Port: 27017
+
 
 ## SSH Access
 
@@ -148,6 +155,20 @@ vagrant ssh
 - Username: vagrant
 - Password: vagrant
 
+## Mailcatcher
+
+Just do:
+
+```
+vagrant ssh
+mailcatcher --http-ip=0.0.0.0
+```
+
+Then visit:
+
+```
+http://192.168.33.10:1080
+```
 
 
 ## Updating the Box
@@ -180,6 +201,41 @@ Or if you want "www" to work as well, do:
 ```
 
 Technically you could also use a Vagrant Plugin like [Vagrant Hostmanager][15] to automatically update your host file when you run Vagrant Up. However, the purpose of Scotch Box is to have as little dependencies as possible so that it's always working when you run "vagrant up".
+
+
+## Configuration
+
+You may want to change some of the out-of-the-box configurations for
+the various parts that come with Scotch Box.  To do so, `vagrant ssh`
+into the box, and edit the appropriate file.  For example, to change
+PHP settings:
+
+    vagrant ssh
+    sudo vim /etc/php5/apache2/conf.d/user.ini
+
+Note that the changes that you make will be for the current running
+Scotch Box only.  If you `vagrant destroy` and then `vagrant up` your
+box again, these manual configuration changes will be lost.
+
+If you prefer to automate your configuration changes so that you can
+destroy and re-create boxes as needed, Vagrant allows you to create a
+"provision script" that runs as part of `vagrant up`.  See the
+[Vagrant
+documentation](https://docs.vagrantup.com/v2/getting-started/provisioning.html)
+for notes.  For example, you could add the following line to your
+Vagrantfile under the `config.vm.hostname = "scotchbox"` line:
+
+    config.vm.provision :shell, path: "bootstrap.sh"
+
+and then create `bootstrap.sh` with the following content in the same
+directory as the Vagrantfile:
+
+    #!/bin/bash
+    # Disable Zend OPcache
+    sed -i 's/;opcache.enable=0/opcache.enable=0/g' /etc/php5/apache2/php.ini
+
+This script will be run each time you `vagrant up`, and it can be run
+on an already-up box using `vagrant provision`.
 
 
 
